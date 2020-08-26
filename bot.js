@@ -59,7 +59,6 @@ client.on("message", message => {
     if (msg.substring(0, 1) == "!") {
         var args = msg.substring(1).split(" ");
         var cmd = args[0];
-       
         args = args.splice(1);
         switch(cmd) {
             // !ping
@@ -184,6 +183,23 @@ client.on("message", message => {
             break;
             case "mode":
                 message.channel.send(mode);
+            break
+            case "playAttachment":
+                if (message.attachments.size > 0){
+                    const url = Array.from(message.attachments.values())[0].attachment;
+                    const regex = RegExp("https.*\.mp3$");
+                    if (regex.test(url)){
+                        const clientVoice = clientConnection.channel;
+                        playLocal(clientVoice, url, message);
+                    } else {
+                        message.channel.send("must be a mp3 file");
+                        return;
+                    }
+                }
+                else{
+                    message.channel.send("where's ur attachments?");
+                    return;
+                }
             break;
          }
      }
