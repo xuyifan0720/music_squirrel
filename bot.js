@@ -49,7 +49,8 @@ client.once("ready", () => {
 });
 
 // login to Discord with your app's token
-client.login("NzQ1NzM3OTcyMTcwODgzMDcy.Xz2Imw.csrtgzlIq9bYVGE4GG5ba4EHjoQ");
+const TOKEN = process.env.DC_TOKEN;
+client.login(TOKEN);
 
 var clientConnection = null;
 
