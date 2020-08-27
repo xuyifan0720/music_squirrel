@@ -135,7 +135,7 @@ client.on("message", message => {
                                                 }).catch(err => console.error);
                                             break; 
                                             case commands.get(mode).stop:
-                                                stop();
+                                                stop(message);
                                             break;
                                             case commands.get(mode).toggle:
                                                 if (mode == ENGLISH){
@@ -196,7 +196,7 @@ client.on("message", message => {
                 message.channel.send(mode);
             break;
             case "checkq":
-                songQueue.forEach(x => message.channel.send(`type: ${x.property}, url: ${x.url}`));
+                songQueue.forEach((ele, idx, arr) => message.channel.send(`${idx}. type: ${ele.property}, url: ${ele.url}`));
             break;
             case "playAttachment":
                 if (message.attachments.size > 0){
