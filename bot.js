@@ -26,9 +26,11 @@ const CHINESE = "zh-CN";
 
 var mode = ENGLISH;
 
+var VOLUME = 1;
+
 const eng_commands = {
     play: "go ahead and play",
-    stop: "go ahead and stop",
+    stop: "go ahead and skip",
     toggle: "go ahead and toggle"
 }
 
@@ -38,9 +40,11 @@ const chn_commands = {
     toggle: "ji qi ren huan"
 }
 
-let commands = new Map();
+var commands = new Map();
 commands.set(ENGLISH, eng_commands);
 commands.set(CHINESE, chn_commands);
+
+var songQueue = [];
 
 // when the client is ready, run this code
 // this event will only trigger one time after logging in
@@ -78,7 +82,9 @@ client.on("message", message => {
                 .then(connection => {
                     clientConnection = connection; 
                     const clientVoice = clientConnection.channel;
-                    play(clientVoice, "https://www.youtube.com/watch?v=7nQ2oiVqKHw", message, 0);
+                    VOLUME = 0;
+                    play(clientVoice, "https://www.youtube.com/watch?v=7nQ2oiVqKHw", message, 
+                        (x) => {VOLUME = 1; currDispatcher = null});
                     const receiver = connection.receiver;
                     clientConnection.on("speaking", (user, speaking) => {
                         if (speaking){
@@ -120,7 +126,12 @@ client.on("message", message => {
                                             case commands.get(mode).play: 
                                                 getInfo(argument).then(info => {
                                                     console.log(info.items[0].webpage_url)
-                                                    play(clientVoice, info.items[0].webpage_url, message);
+                                                    //play(clientVoice, info.items[0].webpage_url, message);
+                                                    songQueue.push({property: "youtube", url: info.items[0].webpage_url});
+                                                    if (!currDispatcher) {
+                                                        console.log("starts playing");
+                                                        playFromQueue(message);
+                                                    }
                                                 }).catch(err => console.error);
                                             break; 
                                             case commands.get(mode).stop:
@@ -183,14 +194,22 @@ client.on("message", message => {
             break;
             case "mode":
                 message.channel.send(mode);
-            break
+            break;
+            case "checkq":
+                songQueue.forEach(x => message.channel.send(`type: ${x.property}, url: ${x.url}`));
+            break;
             case "playAttachment":
                 if (message.attachments.size > 0){
                     const url = Array.from(message.attachments.values())[0].attachment;
                     const regex = RegExp("https.*\.mp3$");
                     if (regex.test(url)){
-                        const clientVoice = clientConnection.channel;
-                        playLocal(clientVoice, url, message);
+                        //const clientVoice = clientConnection.channel;
+                        //playLocal(clientVoice, url, message);
+                        songQueue.push({property: "local", url: url});
+                        if (!currDispatcher) {
+                            console.log("starts playing");
+                            playFromQueue(message);
+                        }
                     } else {
                         message.channel.send("must be a mp3 file");
                         return;
@@ -205,6 +224,22 @@ client.on("message", message => {
      }
 });
 
+function playFromQueue(message){
+    const clientVoice = clientConnection.channel;
+    if (songQueue.length == 0){
+        message.channel.send("empty queue");
+        currDispatcher = null;
+        return;
+    }
+    const song = songQueue.pop();
+    if (song.property == "youtube") {
+        play(clientVoice, song.url, message, playFromQueue);
+    }
+    else {
+        playLocal(clientVoice, song.url, message, playFromQueue);
+    }
+}
+
 function romanize(content, language){
     switch(language){
         case ENGLISH:
@@ -215,33 +250,35 @@ function romanize(content, language){
     }
 }
 
-function play(clientVoice, link, message, vol = 1){
+function play(clientVoice, link, message, callback = (x) => {return;} ){
     if (!clientVoice){
         return message.reply("Bot is not summoned yet");
     }
     const dispatcher = clientConnection
     .play(ytdl(link))
-    .on("finish", () => {})
+    .on("finish", () => {callback(message)})
     .on("error", error => console.error(error));
-    dispatcher.setVolumeLogarithmic(vol);
+    dispatcher.setVolumeLogarithmic(VOLUME);
     currDispatcher = dispatcher;
 }
 
-function playLocal(clientVoice, fp, message){
+function playLocal(clientVoice, fp, message, callback = (x) => {return;}){
     if (!clientVoice){
         return message.reply("Bot is not summoned yet");
     }
     const dispatcher = clientConnection
     .play(fp)
-    .on("finish", () => {})
+    .on("finish", () => {callback(message)})
     .on("error", error => console.error(error));
-    dispatcher.setVolumeLogarithmic(1);
+    dispatcher.setVolumeLogarithmic(VOLUME);
     currDispatcher = dispatcher;
 }
 
-function stop() {
+function stop(message) {
     if (currDispatcher) {
         currDispatcher.end();
+        currDispatcher = null;
+        playFromQueue(message);
     }
 }
 
