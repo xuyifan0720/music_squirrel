@@ -231,7 +231,7 @@ function playFromQueue(message){
         currDispatcher = null;
         return;
     }
-    const song = songQueue.pop();
+    const song = songQueue.shift();
     if (song.property == "youtube") {
         play(clientVoice, song.url, message, playFromQueue);
     }
@@ -278,7 +278,7 @@ function stop(message) {
     if (currDispatcher) {
         currDispatcher.end();
         currDispatcher = null;
-        playFromQueue(message);
+        //playFromQueue(message);
     }
 }
 
