@@ -259,7 +259,8 @@ function play(clientVoice, link, message, callback = (x) => {currDispatcher = nu
         return message.reply("Bot is not summoned yet");
     }
     const dispatcher = clientConnection
-    .play(ytdl(link))
+    .play(ytdl(link, { type: 'opus', quality: "lowest", highWaterMark: 1<<20}, 
+        {highWaterMark: 1024 * 1024 * 10}))
     .on("finish", () => {callback(message)})
     .on("error", error => {
         currDispatcher = null; 
