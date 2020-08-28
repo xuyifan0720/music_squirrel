@@ -171,10 +171,6 @@ client.on("message", message => {
                 })
                 .catch(err => {return message.reply(`error occured ${err}`);})
             break;
-            case "consent":
-                const clientVoice = clientConnection.channel;
-                play(clientVoice, "https://www.youtube.com/watch?v=aaoYpJpEpgA", message);
-            break;
             case "notify":
                 args.forEach(val => {notifications.set(val.toLowerCase(), message.member.user.id)});
                 console.log(message.member.user.id);
@@ -265,7 +261,11 @@ function play(clientVoice, link, message, callback = (x) => {currDispatcher = nu
     const dispatcher = clientConnection
     .play(ytdl(link))
     .on("finish", () => {callback(message)})
-    .on("error", error => {currDispatcher = null; console.error(error)});
+    .on("error", error => {
+        currDispatcher = null; 
+        console.log("youtube error");
+        playFromQueue(message);
+        console.error(error)});
     dispatcher.setVolumeLogarithmic(VOLUME);
     currDispatcher = dispatcher;
 }
