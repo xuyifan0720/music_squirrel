@@ -12,38 +12,38 @@ node bot.js
 
 ## Bot commands
 ### Text commands
-!summon 
-    Summons the bot to the voice channel you are currently in. 
-!chn 
-    Changes to Chinese mode 
-!eng 
-    Changes to English mode 
-!mode 
-    Sees the current mode 
-!playAttachment 
-    If this is left as the comment of an attachment, the bot will try to add the attachment to the queue or play it immediately if the queue is empty
-!checkq 
-    Prints out the song queue in the voice channel 
-!imprison <username> 
-    Imprisons the user in channel with <username>. Whenever an imprisoned user tries to speak, the bot tells him/her to shut up. 
-!release <username>
-    Releases the user 
-!release 
-    Releases everyone from imprisonment 
-!notify <nickname> 
-    The bot will listen in the voice channel and whenever someone called <nickname>, the person who sent this command will be notified 
+!summon \n
+    Summons the bot to the voice channel you are currently in. \n
+!chn \n
+    Changes to Chinese mode \n
+!eng \n
+    Changes to English mode \n
+!mode \n
+    Sees the current mode \n
+!playAttachment \n
+    If this is left as the comment of an attachment, the bot will try to add the attachment to the queue or play it immediately if the queue is empty \n
+!checkq \n
+    Prints out the song queue in the voice channel \n
+!imprison <username> \n
+    Imprisons the user in channel with <username>. Whenever an imprisoned user tries to speak, the bot tells him/her to shut up. \n
+!release <username> \n
+    Releases the user \n
+!release \n
+    Releases everyone from imprisonment \n
+!notify <nickname> \n
+    The bot will listen in the voice channel and whenever someone called <nickname>, the person who sent this command will be notified \n
 
 ### Voice commands 
-Go ahead and play <song>
-    Will play <song> from youtube 
-Go ahead and stop 
-    Will stop current song and move on to the next song in the queue 
-Go ahead and toggle
-    Will change to Chinese mode 
-机器人放<song>
-    Will play <song> from youtube (Only available in Chinese mode)
-机器人过
-    Chinese version of "Go ahead and stop"
-机器人换
-    Will change to English mode
+Go ahead and play <song> \n
+    Will play <song> from youtube \n
+Go ahead and stop \n
+    Will stop current song and move on to the next song in the queue \n
+Go ahead and toggle \n
+    Will change to Chinese mode \n
+机器人放<song> \n
+    Will play <song> from youtube (Only available in Chinese mode) \n
+机器人过 \n
+    Chinese version of "Go ahead and stop" \n
+机器人换 \n
+    Will change to English mode \n
 
