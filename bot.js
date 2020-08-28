@@ -103,7 +103,9 @@ client.on("message", message => {
                             };
                             const recognizeStream = googleSpeechClient
                                 .streamingRecognize(request)
-                                .on('error', console.error)
+                                .on('error', err => {
+                                    console.log("recognize stream error");
+                                })
                                 .on('data', response => {
                                     const transcription = response.results
                                         .map(result => result.alternatives[0].transcript)
@@ -132,7 +134,10 @@ client.on("message", message => {
                                                         console.log("starts playing");
                                                         playFromQueue(message);
                                                     }
-                                                }).catch(err => console.error);
+                                                }).catch(err => {
+                                                    currDispatcher = null;
+                                                    console.log("song error");
+                                                    playFromQueue(message); });
                                             break; 
                                             case commands.get(mode).stop:
                                                 stop(message);
@@ -198,6 +203,9 @@ client.on("message", message => {
             case "checkq":
                 songQueue.forEach((ele, idx, arr) => message.channel.send(`${idx}. type: ${ele.property}, url: ${ele.url}`));
             break;
+            case "restart":
+                playFromQueue(message);
+                break;
             case "playAttachment":
                 if (message.attachments.size > 0){
                     const url = Array.from(message.attachments.values())[0].attachment;
@@ -250,26 +258,26 @@ function romanize(content, language){
     }
 }
 
-function play(clientVoice, link, message, callback = (x) => {return;} ){
+function play(clientVoice, link, message, callback = (x) => {currDispatcher = null; return;} ){
     if (!clientVoice){
         return message.reply("Bot is not summoned yet");
     }
     const dispatcher = clientConnection
     .play(ytdl(link))
     .on("finish", () => {callback(message)})
-    .on("error", error => console.error(error));
+    .on("error", error => {currDispatcher = null; console.error(error)});
     dispatcher.setVolumeLogarithmic(VOLUME);
     currDispatcher = dispatcher;
 }
 
-function playLocal(clientVoice, fp, message, callback = (x) => {return;}){
+function playLocal(clientVoice, fp, message, callback = (x) => {currDispatcher = null; return;}){
     if (!clientVoice){
         return message.reply("Bot is not summoned yet");
     }
     const dispatcher = clientConnection
     .play(fp)
     .on("finish", () => {callback(message)})
-    .on("error", error => console.error(error));
+    .on("error", error => {currDispatcher = null; console.error(error)});
     dispatcher.setVolumeLogarithmic(VOLUME);
     currDispatcher = dispatcher;
 }
