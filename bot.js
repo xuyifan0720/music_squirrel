@@ -18,13 +18,9 @@ let notifications = new Map();
 
 let silenced = new Set();
 
-var currDispatcher = null;
-
 const ENGLISH = "en-US";
 
 const CHINESE = "zh-CN";
-
-var mode = ENGLISH;
 
 var VOLUME = 1;
 
@@ -56,10 +52,14 @@ client.once("ready", () => {
 const TOKEN = process.env.DC_TOKEN;
 client.login(TOKEN);
 
-var clientConnection = null;
+
+var clientConnections = new Map();
+var currDispatchers = new Map();
+var songQueues = new Map();
+var modes = new Map();
 
 client.on("message", message => {
-    const msg = message.content
+    const msg = message.content;
     if (msg.substring(0, 1) == "!") {
         var args = msg.substring(1).split(" ");
         var cmd = args[0];
@@ -81,10 +81,14 @@ client.on("message", message => {
                 voiceChannel.join()
                 .then(connection => {
                     clientConnection = connection; 
+                    clientConnections.set(message.guild.id, clientConnection);
+                    currDispatchers.set(message.guild.id, null);
+                    songQueues.set(message.guild.id, []);
+                    modes.set(message.guild.id, ENGLISH);
                     const clientVoice = clientConnection.channel;
                     VOLUME = 0;
                     play(clientVoice, "https://www.youtube.com/watch?v=7nQ2oiVqKHw", message, 
-                        (x) => {VOLUME = 1; currDispatcher = null});
+                        (x) => {VOLUME = 0.5; currDispatchers.set(message.guild.id, null)});
                     const receiver = connection.receiver;
                     clientConnection.on("speaking", (user, speaking) => {
                         if (speaking){
@@ -96,7 +100,7 @@ client.on("message", message => {
                             const requestConfig = {
                                 encoding: 'LINEAR16',
                                 sampleRateHertz: 48000,
-                                languageCode: mode
+                                languageCode: modes.get(message.guild.id)
                             };
                             const request = {
                                 config: requestConfig
@@ -117,6 +121,7 @@ client.on("message", message => {
                                             message.channel.send(`<@${notifications.get(k)}>, youre mentioned`);
                                         }
                                     })
+                                    const mode = modes.get(message.guild.id);
                                     const breakWord = mode == ENGLISH ? " " : ""
                                     var transList = transcription.split(breakWord);
                                     console.log(transList.length);
@@ -126,10 +131,14 @@ client.on("message", message => {
                                         console.log(romanize(voice_cmd, mode));
                                         switch (romanize(voice_cmd, mode)) {
                                             case commands.get(mode).play: 
+                                                console.log(user.username);
+                                                console.log(message.guild.name);
                                                 getInfo(argument).then(info => {
                                                     console.log(info.items[0].webpage_url)
                                                     //play(clientVoice, info.items[0].webpage_url, message);
+                                                    var songQueue = songQueues.get(message.guild.id);
                                                     songQueue.push({property: "youtube", url: info.items[0].webpage_url});
+                                                    var currDispatcher = currDispatchers.get(message.guild.id);
                                                     if (!currDispatcher) {
                                                         console.log("starts playing");
                                                         playFromQueue(message);
@@ -144,11 +153,11 @@ client.on("message", message => {
                                             break;
                                             case commands.get(mode).toggle:
                                                 if (mode == ENGLISH){
-                                                    mode = CHINESE;
+                                                    modes.set(message.guild.id, CHINESE);
                                                     message.channel.send("Chinese mode");
                                                 }
                                                 else {
-                                                    mode = ENGLISH;
+                                                    modes.set(message.guild.id, ENGLISH);
                                                     message.channel.send("English mode");
                                                 }   
                                             break;
@@ -186,18 +195,22 @@ client.on("message", message => {
                 silenced.add(args.join(" "));
             break;
             case "eng":
-                mode = ENGLISH; 
+                modes.set(message.guild.id, ENGLISH); 
                 message.channel.send("English mode");
             break; 
             case "chn":
-                mode = CHINESE;
+                modes.set(message.guild.id, CHINESE);
                 message.channel.send("Chinese mode");
             break;
             case "mode":
-                message.channel.send(mode);
+                message.channel.send(modes.get(message.guild.id));
             break;
             case "checkq":
-                songQueue.forEach((ele, idx, arr) => message.channel.send(`${idx}. type: ${ele.property}, url: ${ele.url}`));
+                songQueue = songQueues.get(message.guild.id);
+                if (songQueue){
+                    songQueue.forEach((ele, idx, arr) => 
+                        message.channel.send(`${idx}. type: ${ele.property}, url: ${ele.url}`));
+                }
             break;
             case "restart":
                 playFromQueue(message);
@@ -209,6 +222,8 @@ client.on("message", message => {
                     if (regex.test(url)){
                         //const clientVoice = clientConnection.channel;
                         //playLocal(clientVoice, url, message);
+                        var songQueue = songQueues.get(message.guild.id);
+                        var currDispatcher = currDispatchers.get(message.guild.id);
                         songQueue.push({property: "local", url: url});
                         if (!currDispatcher) {
                             console.log("starts playing");
@@ -229,10 +244,13 @@ client.on("message", message => {
 });
 
 function playFromQueue(message){
+    console.log(`when started, guild is ${message.guild.name}`);
+    const clientConnection = clientConnections.get(message.guild.id);
     const clientVoice = clientConnection.channel;
+    var songQueue = songQueues.get(message.guild.id);
     if (songQueue.length == 0){
         message.channel.send("empty queue");
-        currDispatcher = null;
+        currDispatchers.set(message.guild.id, null);
         return;
     }
     const song = songQueue.shift();
@@ -254,39 +272,44 @@ function romanize(content, language){
     }
 }
 
-function play(clientVoice, link, message, callback = (x) => {currDispatcher = null; return;} ){
+function play(clientVoice, link, message, callback = (x) => {currDispatchers.set(message.guild.id, null); return;} ){
     if (!clientVoice){
         return message.reply("Bot is not summoned yet");
     }
+    const clientConnection = clientConnections.get(message.guild.id);
     const dispatcher = clientConnection
     .play(ytdl(link, { type: 'opus', quality: "lowest", highWaterMark: 1<<20}, 
         {highWaterMark: 1024 * 1024 * 10}))
     .on("finish", () => {callback(message)})
     .on("error", error => {
-        currDispatcher = null; 
+        currDispatchers.set(message.guild.id, null);
         console.log("youtube error");
         playFromQueue(message);
         console.error(error)});
     dispatcher.setVolumeLogarithmic(VOLUME);
-    currDispatcher = dispatcher;
+    currDispatchers.set(message.guild.id, dispatcher);
 }
 
-function playLocal(clientVoice, fp, message, callback = (x) => {currDispatcher = null; return;}){
+function playLocal(clientVoice, fp, message, callback = (x) => {currDispatchers.set(message.guild.id, null); return;}){
     if (!clientVoice){
         return message.reply("Bot is not summoned yet");
     }
+    const clientConnection = clientConnections.get(message.guild.id);
     const dispatcher = clientConnection
     .play(fp)
     .on("finish", () => {callback(message)})
-    .on("error", error => {currDispatcher = null; console.error(error)});
+    .on("error", error => {
+        currDispatchers.set(message.guild.id, null); 
+        console.error(error)});
     dispatcher.setVolumeLogarithmic(VOLUME);
-    currDispatcher = dispatcher;
+    currDispatchers.set(message.guild.id, dispatcher);
 }
 
 function stop(message) {
+    currDispatcher = currDispatchers.get(message.guild.id);
     if (currDispatcher) {
         currDispatcher.end();
-        currDispatcher = null;
+        currDispatchers.set(message.guild.id, null);
         //playFromQueue(message);
     }
 }
