@@ -53,6 +53,7 @@ const TOKEN = process.env.DC_TOKEN;
 client.login(TOKEN);
 
 
+
 var clientConnections = new Map();
 var currDispatchers = new Map();
 var songQueues = new Map();
@@ -124,7 +125,6 @@ client.on("message", message => {
                                     const mode = modes.get(message.guild.id);
                                     const breakWord = mode == ENGLISH ? " " : ""
                                     var transList = transcription.split(breakWord);
-                                    console.log(transList.length);
                                     if (transList.length >= 4){
                                         var voice_cmd = transList.slice(0, 4).join(breakWord);
                                         var argument = transList.slice(4).join(breakWord);
