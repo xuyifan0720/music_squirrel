@@ -52,8 +52,6 @@ client.once("ready", () => {
 const TOKEN = process.env.DC_TOKEN;
 client.login(TOKEN);
 
-
-
 var clientConnections = new Map();
 var currDispatchers = new Map();
 var songQueues = new Map();
@@ -89,7 +87,7 @@ client.on("message", message => {
                     const clientVoice = clientConnection.channel;
                     VOLUME = 0;
                     play(clientVoice, "https://www.youtube.com/watch?v=7nQ2oiVqKHw", message, 
-                        (x) => {VOLUME = 0.5; currDispatchers.set(message.guild.id, null)});
+                        (x) => {VOLUME = 1; currDispatchers.set(message.guild.id, null)});
                     const receiver = connection.receiver;
                     clientConnection.on("speaking", (user, speaking) => {
                         if (speaking){
