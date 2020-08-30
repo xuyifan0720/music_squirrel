@@ -85,7 +85,7 @@ client.on("message", message => {
                     songQueues.set(message.guild.id, []);
                     modes.set(message.guild.id, ENGLISH);
                     const clientVoice = clientConnection.channel;
-                    VOLUME = 0.5;
+                    VOLUME = 0;
                     play(clientVoice, "https://www.youtube.com/watch?v=7nQ2oiVqKHw", message, 
                         (x) => {VOLUME = 0.5; currDispatchers.set(message.guild.id, null)});
                     console.log("conncted to voice channel")
