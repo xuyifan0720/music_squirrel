@@ -12,6 +12,8 @@ const googleSpeech = require('@google-cloud/speech');
 
 var pinyin = require("chinese-to-pinyin");
 
+var fs = require("fs");
+
 const googleSpeechClient = new googleSpeech.SpeechClient();
 
 let notifications = new Map();
@@ -41,6 +43,8 @@ commands.set(ENGLISH, eng_commands);
 commands.set(CHINESE, chn_commands);
 
 var songQueue = [];
+
+
 
 // when the client is ready, run this code
 // this event will only trigger one time after logging in
@@ -237,6 +241,10 @@ client.on("message", message => {
                     message.channel.send("where's ur attachments?");
                     return;
                 }
+            break;
+            case "hh":
+                var text = fs.readFileSync("./helpText").toString('utf-8');
+                message.channel.send(text);
             break;
          }
      }

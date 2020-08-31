@@ -1,0 +1,26 @@
+Text commands
+!hh
+help
+!summon 
+Summons the bot to your current voice channel. 
+!mode 
+Check mode of the bot in current guild(English or Chinese)
+!eng 
+Change to English mode 
+!chn
+Change to Chinese mode
+!playAttachment 
+When this is the comment of an mp3 attachment, will play the attachment in the channel 
+Other unimportant text commands see https://top.gg/bot/745737972170883072
+
+Voice commands 
+English mode:
+	Go ahead and play <song name> -- Adds the song to the queue, if nothing is playing rn, will start playing
+	Go ahead and skip -- Skips the song 
+	Go ahead and toggle -- Switch to Chinese mode 
+
+Chinese mode: 
+	机器人放<歌名> -- Adds the song to the queue, if nothing is playing rn, will start playing
+	机器人过 -- Skips the song 
+	机器人换 -- Switches to English mode
+

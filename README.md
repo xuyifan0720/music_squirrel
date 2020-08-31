@@ -12,6 +12,8 @@ node bot.js
 
 ## Bot commands
 ### Text commands
+!hh  
+    Prints out help info.  
 !summon   
     Summons the bot to the voice channel you are currently in.   
 !chn   
