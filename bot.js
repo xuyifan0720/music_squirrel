@@ -119,7 +119,8 @@ client.on("message", message => {
                                         .map(result => result.alternatives[0].transcript)
                                         .join('\n')
                                         .toLowerCase()
-                                    console.log(`I heard: ${transcription}`)
+                                    console.log(`I heard: ${transcription}`);
+                                    message.channel.send(`I heard: ${transcription}`);
                                     Array.from(notifications.keys()).forEach(k => {
                                         if (transcription.indexOf(k) != -1){
                                             message.channel.send(`<@${notifications.get(k)}>, youre mentioned`);
