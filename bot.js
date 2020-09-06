@@ -150,6 +150,7 @@ client.on("message", message => {
                                                 }).catch(err => {
                                                     currDispatcher = null;
                                                     console.log("song error");
+                                                    console.log("error");
                                                     playFromQueue(message); });
                                             break; 
                                             case commands.get(mode).stop:
@@ -296,8 +297,8 @@ function play(clientVoice, link, message, callback = (x) => {currDispatchers.set
     .on("error", error => {
         currDispatchers.set(message.guild.id, null);
         console.log("youtube error");
-        playFromQueue(message);
-        console.error(error)});
+        console.error(error);
+        playFromQueue(message);});
     dispatcher.setVolumeLogarithmic(VOLUME);
     currDispatchers.set(message.guild.id, dispatcher);
 }
