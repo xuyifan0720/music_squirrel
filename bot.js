@@ -179,6 +179,10 @@ client.on("message", message => {
                         } else {
                             console.log(`I stopped listening to ${user.username}`);
                         }
+                    })
+                    .on("error", error => {
+                        console.log("speaker connection error");
+                        console.log(error);
                     });
                 })
                 .catch(err => {return message.reply(`error occured ${err}`);})
