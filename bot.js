@@ -293,12 +293,15 @@ function play(clientVoice, link, message, callback = (x) => {currDispatchers.set
     const dispatcher = clientConnection
     .play(ytdl(link, { type: 'opus', quality: "lowest", highWaterMark: 1<<20}, 
         {highWaterMark: 1024 * 1024 * 10}))
-    .on("finish", () => {callback(message)})
+    .on("finish", () => {
+        console.log("finished")
+        callback(message)})
     .on("error", error => {
         currDispatchers.set(message.guild.id, null);
         console.log("youtube error");
         console.error(error);
-        playFromQueue(message);});
+        playFromQueue(message);
+        return;});
     dispatcher.setVolumeLogarithmic(VOLUME);
     currDispatchers.set(message.guild.id, dispatcher);
 }
